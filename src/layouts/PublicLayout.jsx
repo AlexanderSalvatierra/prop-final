@@ -1,25 +1,36 @@
 // src/layouts/PublicLayout.jsx
+
 import { NavLink, Outlet } from 'react-router-dom';
 
 export function PublicLayout() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Navbar Público */}
-      <header className="bg-white shadow-md">
+      {/* Navbar Público (AHORA COLOR TEAL) */}
+      <header className="bg-teal-600 shadow-md">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <NavLink to="/" className="text-2xl font-bold text-lime-600">
-            Propiel
+          {/* LOGO Y NOMBRE */}
+          <NavLink to="/" className="flex items-center space-x-2 text-2xl font-bold text-white">
+            <img src="/propiel-logo.png" alt="Propiel Logo" className="h-8 w-auto" /> 
+            <span>Propiel</span>
           </NavLink>
-          <div className="flex space-x-6">
-            <NavLink to="/conocenos" className="text-gray-600 hover:text-lime-600">
+          
+          {/* Links del Navbar */}
+          <div className="flex items-center space-x-6">
+            <NavLink 
+              to="/conocenos" 
+              className="text-teal-100 hover:text-white font-medium transition-colors"
+            >
               Conócenos
             </NavLink>
-            <NavLink to="/contacto" className="text-gray-600 hover:text-lime-600">
+            <NavLink 
+              to="/contacto" 
+              className="text-teal-100 hover:text-white font-medium transition-colors"
+            >
               Contacto
             </NavLink>
             <NavLink 
               to="/login" 
-              className="px-5 py-2 bg-lime-600 text-white font-semibold rounded-lg hover:bg-lime-700"
+              className="px-5 py-2 bg-white text-teal-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
             >
               Iniciar Sesión
             </NavLink>

@@ -13,7 +13,7 @@ export function LandingPage() {
       <div className="space-x-4">
         <Link 
           to="/login" 
-          className="px-8 py-3 bg-lime-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-lime-700 transition-transform transform hover:scale-105"
+          className="px-8 py-3 bg-teal-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-teal-700 transition-transform transform hover:scale-105"
         >
           Acceder
         </Link>
