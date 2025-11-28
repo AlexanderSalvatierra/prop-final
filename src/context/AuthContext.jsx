@@ -1,56 +1,141 @@
 // src/context/AuthContext.jsx
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabase/client';
+import bcrypt from 'bcryptjs';
 
-// 1. Crear el Contexto
 const AuthContext = createContext();
 
-// 2. Crear el Proveedor
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // null = no logueado
+  // 1. INICIALIZACIÓN "PEREZOSA":
+  // En lugar de empezar en null, revisamos si ya hay algo guardado en el navegador.
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('propiel_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  // --- Funciones de Auth (Simuladas) ---
+  // Efecto para sincronizar el estado con LocalStorage automáticamente
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('propiel_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('propiel_user');
+    }
+  }, [user]);
 
-  // Esta función simula el login.
-  // En el futuro, aquí llamarías a tu backend.
-  const login = (email, password) => {
-    // LÓGICA SIMULADA
-    if (email === 'especialista@propiel.com' && password === '123') {
-      const mockUser = { id: 1, email, role: 'specialist' };
-      setUser(mockUser);
-      return mockUser; // Retornamos el usuario en éxito
+  // --- LOGIN ---
+  const login = async (email, password) => {
+    try {
+      // 1. Buscar en Especialistas
+      const { data: specData } = await supabase
+        .from('especialistas')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (specData) {
+        const isMatch = await bcrypt.compare(password, specData.password);
+        if (isMatch) {
+          const userData = { ...specData, role: 'specialist' };
+          setUser(userData); // El useEffect lo guardará en localStorage
+          return userData;
+        }
+      }
+
+      // 2. Buscar en Pacientes
+      const { data: patData } = await supabase
+        .from('pacientes')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (patData) {
+        const isMatch = await bcrypt.compare(password, patData.password);
+        if (isMatch) {
+          const userData = { ...patData, role: 'patient' };
+          setUser(userData); // El useEffect lo guardará en localStorage
+          return userData;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Login error:", error);
+      return null;
     }
-    if (email === 'paciente@propiel.com' && password === '123') {
-      const mockUser = { id: 2, email, role: 'patient' };
-      setUser(mockUser);
-      return mockUser; // Retornamos el usuario en éxito
-    }
-    
-    // Si falla
-    setUser(null);
-    return null;
   };
 
+  // --- LOGOUT ---
   const logout = () => {
     setUser(null);
-    // Aquí también podrías redirigir al login
+    // El useEffect se encarga de borrar el localStorage automáticamente
+    // pero si quieres ser explícito, la línea de abajo asegura limpieza inmediata:
+    localStorage.removeItem('propiel_user');
   };
 
-  // 3. Valor
+  // --- REGISTER ---
+  const register = async ({ email, password, nombre, role, sexo, especialidad }) => {
+    try {
+      let resultData = null;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      if (role === 'patient') {
+        const { data, error } = await supabase
+          .from('pacientes')
+          .insert([{
+            email,
+            password: hashedPassword,
+            nombre,
+            sexo,
+            telefono: 'Sin registrar',
+            fecha_nacimiento: '2000-01-01'
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+        resultData = { ...data, role: 'patient' };
+
+      } else if (role === 'specialist') {
+        const { data, error } = await supabase
+          .from('especialistas')
+          .insert([{
+            email,
+            password: hashedPassword,
+            nombre,
+            especialidad,
+            cedula: 'PENDIENTE'
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+        resultData = { ...data, role: 'specialist' };
+      }
+
+      if (resultData) {
+        setUser(resultData); // Se guardará y persistirá
+        return resultData;
+      }
+
+    } catch (error) {
+      console.error("Register error:", error.message);
+      return null;
+    }
+  };
+
   const value = {
-    user, // El objeto de usuario { id, email, role }
-    isAuthenticated: !!user, // Un booleano rápido para saber si está logueado
+    user,
+    isAuthenticated: !!user,
     login,
     logout,
+    register
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// 4. Custom Hook
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
-  }
+  if (!context) throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   return context;
 }

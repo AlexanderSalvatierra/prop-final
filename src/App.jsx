@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import { PublicLayout } from './layouts/PublicLayout';
@@ -11,45 +12,64 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 // Páginas Públicas
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { AboutPage } from './pages/AboutPage';
+import { ContactPage } from './pages/ContactPage';
 
 // Páginas Privadas (Dashboard y otras)
 import { DashboardPage } from './pages/DashboardPage';
 import { PatientListPage } from './pages/PatientListPage';
 import { PatientFormPage } from './pages/PatientFormPage';
+import { AppointmentBookingPage } from './pages/AppointmentBookingPage';
+import { MyAppointmentsPage } from './pages/MyAppointmentsPage';
+import { PatientDetailsPage } from './pages/PatientDetailsPage';
+import { MyMedicalHistoryPage } from './pages/MyMedicalHistoryPage';
+import { MyPaymentsPage } from './pages/MyPaymentsPage';
 // (Puedes crear más páginas como 'ConocenosPage', 'ContactoPage', etc.)
 
 function App() {
   return (
-    <Routes>
-      
-      {/* --- RUTAS PÚBLICAS --- */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        {/* <Route path="/conocenos" element={<ConocenosPage />} /> */}
-        {/* <Route path="/contacto" element={<ContactoPage />} /> */}
-      </Route>
+    <>
+      <Toaster position="top-right" />
+      <Routes>
 
-      {/* --- RUTAS PRIVADAS (Protegidas) --- */}
-      <Route element={<ProtectedRoute />}> {/* 👈 El Guardián */}
-        <Route element={<AppLayout />}> {/* 👈 El layout con Sidebar */}
-          
-          <Route path="/dashboard" element={<DashboardPage />} />
-          
-          {/* Rutas (links) que solo verá el Especialista */}
-          <Route path="/pacientes" element={<PatientListPage />} />
-          <Route path="/pacientes/nuevo" element={<PatientFormPage />} />
-          <Route path="/pacientes/editar/:id" element={<PatientFormPage />} />
-          
-          {/* Rutas (links) que solo verá el Paciente */}
-          {/* <Route path="/mis-citas" element={<MisCitasPage />} /> */}
-          {/* <Route path="/mi-perfil" element={<MiPerfilPage />} /> */}
-
+        {/* --- RUTAS PÚBLICAS --- */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/conocenos" element={<AboutPage />} />
+          <Route path="/contacto" element={<ContactPage />} />
         </Route>
-      </Route>
 
-    </Routes>
+        {/* --- RUTAS PRIVADAS (Protegidas) --- */}
+        <Route element={<ProtectedRoute />}> {/* 👈 El Guardián Principal (Auth + Provider) */}
+          <Route element={<AppLayout />}> {/* 👈 El layout con Sidebar */}
+
+            <Route path="/dashboard" element={<DashboardPage />} />
+
+            {/* Rutas (links) que solo verá el Especialista */}
+            <Route element={<ProtectedRoute allowedRoles={['specialist']} withProvider={false} />}>
+              <Route path="/pacientes" element={<PatientListPage />} />
+              <Route path="/pacientes/nuevo" element={<PatientFormPage />} />
+              <Route path="/pacientes/editar/:id" element={<PatientFormPage />} />
+              <Route path="/pacientes/:id" element={<PatientDetailsPage />} />
+            </Route>
+
+            {/* Rutas (links) que solo verá el Paciente */}
+            <Route element={<ProtectedRoute allowedRoles={['patient']} withProvider={false} />}>
+              <Route path="/agendar" element={<AppointmentBookingPage />} />
+              <Route path="/mis-citas" element={<MyAppointmentsPage />} />
+              <Route path="/mi-historial" element={<MyMedicalHistoryPage />} />
+              <Route path="/mis-pagos" element={<MyPaymentsPage />} />
+            </Route>
+            {/* <Route path="/mi-perfil" element={<MiPerfilPage />} /> */}
+
+          </Route>
+        </Route>
+
+      </Routes>
+    </>
   );
 }
+
 
 export default App;

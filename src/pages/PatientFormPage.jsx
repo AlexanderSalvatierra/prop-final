@@ -8,6 +8,8 @@ const initialState = {
   nombre: '',
   email: '',
   telefono: '',
+  fecha_nacimiento: '',
+  sexo: 'Masculino',
   proximaCita: '',
   notas: '',
 };
@@ -19,6 +21,7 @@ export function PatientFormPage() {
 
   const [formData, setFormData] = useState(initialState);
   const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (id) {
@@ -41,24 +44,54 @@ export function PatientFormPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Limpiar error al escribir
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "El email es obligatorio.";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "El email no es válido.";
+    }
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Aquí iría la validación de datos
-    if (!formData.nombre || !formData.email) {
-      alert("Nombre y Email son obligatorios.");
+
+    // Validaciones básicas de frontend
+    if (!formData.nombre || !formData.email || !formData.fecha_nacimiento) {
+      alert("Por favor completa los campos obligatorios (Nombre, Email, Fecha Nacimiento)");
       return;
     }
 
-    if (isEditing) {
-      updatePatient(id, formData);
-    } else {
-      addPatient(formData);
+    // --- SANITIZACIÓN DE DATOS (EL FIX) ---
+    // Creamos una copia de los datos para limpiarlos
+    const dataToSend = { ...formData };
+
+    // Regla de Oro: Si una fecha es un string vacío, conviértela a NULL
+    if (dataToSend.proximaCita === '') {
+      dataToSend.proximaCita = null;
     }
 
-    // Redirigir a la lista de pacientes
+    // Nota: fecha_nacimiento es obligatoria en tu DB, así que no deberíamos
+    // convertirla a null, sino obligar al usuario a llenarla (con el if de arriba).
+
+    // --- ENVIAR ---
+    if (isEditing) {
+      updatePatient(id, dataToSend);
+    } else {
+      addPatient(dataToSend);
+    }
+
+    // Redirigir
     navigate('/pacientes');
   };
 
@@ -69,8 +102,8 @@ export function PatientFormPage() {
       </h1>
 
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
               Nombre Completo
@@ -81,9 +114,14 @@ export function PatientFormPage() {
               id="nombre"
               value={formData.nombre}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-              required
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-teal-500 ${errors.nombre
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-gray-300 focus:border-teal-500'
+                }`}
             />
+            {errors.nombre && (
+              <p className="mt-1 text-sm text-red-500">{errors.nombre}</p>
+            )}
           </div>
 
           <div>
@@ -96,9 +134,14 @@ export function PatientFormPage() {
               id="email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-              required
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-teal-500 ${errors.email
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-gray-300 focus:border-teal-500'
+                }`}
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
           </div>
 
           <div>
@@ -114,6 +157,35 @@ export function PatientFormPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
             />
           </div>
+          <div>
+            <label htmlFor="fecha_nacimiento" className="block text-sm font-medium text-gray-700">
+              Fecha de Nacimiento
+            </label>
+            <input
+              type="date"
+              name="fecha_nacimiento"
+              id="fecha_nacimiento"
+              value={formData.fecha_nacimiento}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+              required // 👈 Hacemos que el navegador también lo exija
+            />
+          </div>
+          <div>
+            <label htmlFor="sexo" className="block text-sm font-medium text-gray-700">
+              Sexo
+            </label>
+            <select
+              name="sexo"
+              id="sexo"
+              value={formData.sexo}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 py-2 px-3 bg-white"
+            >
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+          </div>
 
           <div>
             <label htmlFor="proximaCita" className="block text-sm font-medium text-gray-700">
@@ -126,6 +198,7 @@ export function PatientFormPage() {
               value={formData.proximaCita}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+              required
             />
           </div>
 
