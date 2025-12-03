@@ -57,6 +57,17 @@ export function PatientCard({ patient }) {
             </div>
           )}
         </div>
+
+        {/* Botón Ver Expediente */}
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <Link
+            to={`/pacientes/${patient.id}`}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
+          >
+            <FileText className="w-4 h-4" />
+            Ver Expediente
+          </Link>
+        </div>
       </div>
 
       {/* Footer con Acciones (Iconos discretos) */}

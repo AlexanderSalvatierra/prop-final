@@ -12,6 +12,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 // Páginas Públicas
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage'; // Import RegisterPage
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 
@@ -24,6 +25,8 @@ import { MyAppointmentsPage } from './pages/MyAppointmentsPage';
 import { PatientDetailsPage } from './pages/PatientDetailsPage';
 import { MyMedicalHistoryPage } from './pages/MyMedicalHistoryPage';
 import { MyPaymentsPage } from './pages/MyPaymentsPage';
+import { MyPrescriptionsPage } from './pages/MyPrescriptionsPage';
+import { ProfilePage } from './pages/ProfilePage';
 // (Puedes crear más páginas como 'ConocenosPage', 'ContactoPage', etc.)
 
 function App() {
@@ -36,6 +39,7 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} /> {/* New Route */}
           <Route path="/conocenos" element={<AboutPage />} />
           <Route path="/contacto" element={<ContactPage />} />
         </Route>
@@ -60,13 +64,17 @@ function App() {
               <Route path="/mis-citas" element={<MyAppointmentsPage />} />
               <Route path="/mi-historial" element={<MyMedicalHistoryPage />} />
               <Route path="/mis-pagos" element={<MyPaymentsPage />} />
+              <Route path="/mis-recetas" element={<MyPrescriptionsPage />} />
             </Route>
-            {/* <Route path="/mi-perfil" element={<MiPerfilPage />} /> */}
-
+            <Route path="/mis-pagos" element={<MyPaymentsPage />} />
           </Route>
+
+          <Route path="/perfil" element={<ProfilePage />} />
+
         </Route>
 
-      </Routes>
+
+      </Routes >
     </>
   );
 }

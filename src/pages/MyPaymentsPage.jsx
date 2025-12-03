@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase/client';
 import { Spinner } from '../components/ui/Spinner';
-import { CreditCard, DollarSign, Calendar, FileText } from 'lucide-react';
+import { CreditCard, DollarSign, Calendar, FileText, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { generatePaymentReceipt } from '../utils/generatePaymentReceipt';
 
 export function MyPaymentsPage() {
     const { user } = useAuth();
@@ -32,6 +33,16 @@ export function MyPaymentsPage() {
             toast.error('Error al cargar tus pagos');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDownloadReceipt = async (payment) => {
+        try {
+            await generatePaymentReceipt(payment, user);
+            toast.success('Recibo descargado correctamente');
+        } catch (error) {
+            console.error('Error downloading receipt:', error);
+            toast.error('Error al generar el recibo');
         }
     };
 
@@ -85,6 +96,9 @@ export function MyPaymentsPage() {
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Monto
                                     </th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Acciones
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -104,14 +118,24 @@ export function MyPaymentsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${payment.metodo === 'Efectivo' ? 'bg-green-100 text-green-800' :
-                                                    payment.metodo === 'Tarjeta' ? 'bg-blue-100 text-blue-800' :
-                                                        'bg-purple-100 text-purple-800'
+                                                payment.metodo === 'Tarjeta' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-purple-100 text-purple-800'
                                                 }`}>
                                                 {payment.metodo}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
                                             ${payment.monto}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button
+                                                onClick={() => handleDownloadReceipt(payment)}
+                                                className="text-teal-600 hover:text-teal-900 inline-flex items-center gap-1 transition-colors"
+                                                title="Descargar Recibo"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Descargar</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

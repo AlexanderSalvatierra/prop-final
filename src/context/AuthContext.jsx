@@ -22,14 +22,14 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  // --- LOGIN ---
-  const login = async (email, password) => {
+  // --- LOGIN OMNICANAL ---
+  const login = async (identifier, password) => {
     try {
-      // 1. Buscar en Especialistas
+      // 1. Buscar en Especialistas (por email O teléfono)
       const { data: specData } = await supabase
         .from('especialistas')
         .select('*')
-        .eq('email', email)
+        .or(`email.eq.${identifier},telefono.eq.${identifier}`)
         .single();
 
       if (specData) {
@@ -41,11 +41,11 @@ export function AuthProvider({ children }) {
         }
       }
 
-      // 2. Buscar en Pacientes
+      // 2. Buscar en Pacientes (por email O teléfono)
       const { data: patData } = await supabase
         .from('pacientes')
         .select('*')
-        .eq('email', email)
+        .or(`email.eq.${identifier},telefono.eq.${identifier}`)
         .single();
 
       if (patData) {
@@ -123,12 +123,21 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // --- UPDATE USER PROFILE (Local State) ---
+  const updateUserProfile = (updates) => {
+    setUser(prev => {
+      if (!prev) return null;
+      return { ...prev, ...updates };
+    });
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
     login,
     logout,
-    register
+    register,
+    updateUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

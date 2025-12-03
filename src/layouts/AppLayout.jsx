@@ -1,7 +1,8 @@
 // src/layouts/AppLayout.jsx
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Users, LogOut, Menu, Calendar, User, Activity, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Menu, Calendar, User, Activity, CreditCard, Pill } from 'lucide-react';
 
 // Componente NavLink personalizado
 function SidebarLink({ to, icon: Icon, children }) {
@@ -25,6 +26,7 @@ function SidebarLink({ to, icon: Icon, children }) {
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -32,15 +34,39 @@ export function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-teal-600 text-white p-4 flex items-center justify-between shadow-md">
+        <div className="flex items-center space-x-3">
+          <img src="/propiel-logo.png" alt="Propiel" className="h-8 w-auto" />
+          <span className="text-xl font-bold tracking-tight">Propiel</span>
+        </div>
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 rounded-lg hover:bg-teal-700 focus:outline-none"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-teal-600 p-6 shadow-2xl flex flex-col hidden md:flex">
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 p-6 shadow-2xl flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 lg:static lg:inset-auto lg:flex
+      `}>
         {/* LOGO Y NOMBRE */}
         <div className="flex items-center space-x-3 mb-10 px-2">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-md">
-            {/* Placeholder para logo */}
-            <span className="text-teal-600 font-bold text-xl">P</span>
-          </div>
+          <img src="/propiel-logo.png" alt="Propiel" className="h-8 w-auto mr-2" />
           <span className="text-2xl font-bold text-white tracking-tight">Propiel</span>
         </div>
 
@@ -60,6 +86,7 @@ export function AppLayout() {
               <SidebarLink to="/mis-citas" icon={Calendar}>Mis Citas</SidebarLink>
               <SidebarLink to="/mi-historial" icon={Activity}>Mi Historial</SidebarLink>
               <SidebarLink to="/mis-pagos" icon={CreditCard}>Mis Pagos</SidebarLink>
+              <SidebarLink to="/mis-recetas" icon={Pill}>Mis Recetas</SidebarLink>
               {/* <SidebarLink to="/mi-perfil" icon={User}>Mi Perfil</SidebarLink> */}
             </>
           )}
@@ -68,14 +95,29 @@ export function AppLayout() {
         {/* Footer del Sidebar con Logout */}
         <div className="mt-auto pt-6 border-t border-teal-500">
           <div className="flex items-center space-x-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold">
-              {user?.email[0].toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-teal-400">
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                user?.email[0].toUpperCase()
+              )}
             </div>
             <div className="overflow-hidden">
               <p className="text-xs text-teal-200 font-medium uppercase tracking-wider">Cuenta</p>
-              <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+              <Link to="/perfil" className="text-sm font-medium text-white truncate hover:underline block">
+                {user?.email}
+              </Link>
             </div>
           </div>
+
+          <Link
+            to="/perfil"
+            className="flex items-center justify-center w-full mb-3 text-teal-100 hover:text-white text-sm font-medium transition-colors"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Mi Perfil
+          </Link>
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-red-100 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg transition-colors"
@@ -87,8 +129,8 @@ export function AppLayout() {
       </aside>
 
       {/* Contenido Principal */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 md:p-12 max-w-7xl mx-auto">
+      <main className="flex-1 overflow-y-auto w-full">
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>

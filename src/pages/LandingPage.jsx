@@ -1,195 +1,376 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Calendar, Activity, Star, UserCheck, HeartPulse } from 'lucide-react';
+import { ShieldCheck, Calendar, Activity, Star, HeartPulse, MapPin, Phone, Mail, Send } from 'lucide-react';
 
 export function LandingPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-white min-h-screen font-sans text-gray-800">
+
       {/* --- HERO SECTION --- */}
-      <div className="relative bg-teal-800 overflow-hidden">
-        <div className="absolute inset-0">
+      <div className="relative bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+
+            {/* Diagonal Shape */}
+            <svg
+              className="hidden lg:block absolute right-0 inset-y-0 h-full w-48 text-white transform translate-x-1/2"
+              fill="currentColor"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <polygon points="50,0 100,0 50,100 0,100" />
+            </svg>
+
+            <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
+              <div className="sm:text-center lg:text-left">
+                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                  <span className="block xl:inline">Propiel Dermatología</span>{' '}
+                  <span className="block text-teal-600 xl:inline">Cuidado experto para tu piel</span>
+                </h1>
+                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                  Conectamos pacientes con los mejores dermatólogos. Agenda tu cita hoy mismo y comienza tu camino hacia una piel saludable y radiante con tecnología de vanguardia.
+                </p>
+                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                  <div className="rounded-md shadow">
+                    <Link
+                      to="/register"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 md:py-4 md:text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      Agendar cita
+                    </Link>
+                  </div>
+                  <div className="mt-3 sm:mt-0 sm:ml-3">
+                    <a
+                      href="#nosotros"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 md:py-4 md:text-lg transition-colors"
+                    >
+                      Conoce más
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
           <img
-            className="w-full h-full object-cover opacity-20"
-            src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-            alt="Medical background"
+            className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full"
+            src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+            alt="Doctor dermatologist checking patient skin"
           />
-          <div className="absolute inset-0 bg-teal-900 mix-blend-multiply" />
-        </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Cuidado Dermatológico <br className="hidden sm:block" />
-            <span className="text-teal-200">Integral y Moderno</span>
-          </h1>
-          <p className="mt-6 text-xl text-teal-100 max-w-3xl">
-            Propiel conecta pacientes con especialistas de primer nivel. Gestiona tus citas, historial médico y tratamientos en una plataforma segura y fácil de usar.
-          </p>
-          <div className="mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-start">
-            <div className="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
-              <Link
-                to="/login"
-                className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-teal-900 bg-white hover:bg-teal-50 sm:px-8"
-              >
-                Comenzar Ahora
-              </Link>
-              <Link
-                to="/conocenos"
-                className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 bg-opacity-60 hover:bg-opacity-70 sm:px-8"
-              >
-                Saber Más
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* --- SERVICES SECTION --- */}
-      <div className="py-16 bg-gray-50 overflow-hidden lg:py-24">
-        <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
-          <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Nuestros Servicios
-            </h2>
-            <p className="mt-4 max-w-3xl mx-auto text-center text-xl text-gray-500">
-              Tecnología y experiencia médica al servicio de tu piel.
-            </p>
-          </div>
-
-          <div className="relative mt-12 lg:mt-24 lg:grid lg:grid-cols-3 lg:gap-8">
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white mx-auto">
-                <ShieldCheck className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="mt-5 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Dermatología Clínica</h3>
-                <p className="mt-2 text-base text-gray-500">
-                  Diagnóstico y tratamiento de enfermedades de la piel, pelo y uñas con los más altos estándares.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white mx-auto">
-                <Calendar className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="mt-5 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Agenda Inteligente</h3>
-                <p className="mt-2 text-base text-gray-500">
-                  Reserva, reprograma y gestiona tus citas médicas desde cualquier dispositivo, 24/7.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white mx-auto">
-                <Activity className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div className="mt-5 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Seguimiento Continuo</h3>
-                <p className="mt-2 text-base text-gray-500">
-                  Historial médico digital y recordatorios personalizados para asegurar el éxito de tu tratamiento.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- TESTIMONIALS SECTION --- */}
-      <section className="py-12 bg-white overflow-hidden md:py-20 lg:py-24">
+      {/* --- ABOUT US SECTION --- */}
+      <section id="nosotros" className="py-16 bg-white overflow-hidden lg:py-24">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative">
-            <h2 className="text-center text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl mb-10">
-              Lo que dicen nuestros pacientes
-            </h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-
-              {/* Testimonio 1 */}
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                </div>
-                <p className="text-gray-600 italic mb-6">
-                  "Increíble atención. Pude agendar mi cita en segundos y el recordatorio me salvó de olvidarla. ¡Muy recomendado!"
-                </p>
-                <div className="flex items-center justify-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-teal-200 flex items-center justify-center text-teal-700 font-bold">
-                      MC
-                    </div>
-                  </div>
-                  <div className="ml-3 text-left">
-                    <div className="text-sm font-medium text-gray-900">María C.</div>
-                    <div className="text-sm text-gray-500">Paciente</div>
-                  </div>
-                </div>
+          <div className="relative lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  className="w-full h-full object-cover"
+                  src="https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                  alt="Medical team discussion"
+                />
+                <div className="absolute inset-0 bg-teal-600 mix-blend-multiply opacity-20"></div>
               </div>
+            </div>
 
-              {/* Testimonio 2 */}
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                </div>
-                <p className="text-gray-600 italic mb-6">
-                  "La plataforma es muy intuitiva. Me encanta poder ver mi historial y recetas desde mi celular."
-                </p>
-                <div className="flex items-center justify-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold">
-                      JR
+            <div className="relative mt-10 lg:mt-0">
+              <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight sm:text-3xl">
+                Sobre Nosotros
+              </h3>
+              <p className="mt-3 text-lg text-gray-500">
+                En Clínica Dermatológica Pro Piel, nos dedicamos a ofrecer un servicio integral y personalizado. Nuestro equipo de especialistas está altamente calificado para tratar cualquier afección de la piel, utilizando las técnicas más avanzadas y seguras.
+              </p>
+
+              <dl className="mt-10 space-y-10">
+                <div className="relative">
+                  <dt>
+                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                      <ShieldCheck className="h-6 w-6" aria-hidden="true" />
                     </div>
-                  </div>
-                  <div className="ml-3 text-left">
-                    <div className="text-sm font-medium text-gray-900">Juan R.</div>
-                    <div className="text-sm text-gray-500">Paciente</div>
-                  </div>
+                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Seguridad y Confianza</p>
+                  </dt>
+                  <dd className="mt-2 ml-16 text-base text-gray-500">
+                    Todos nuestros especialistas están certificados y verificados para tu tranquilidad.
+                  </dd>
                 </div>
-              </div>
 
-              {/* Testimonio 3 */}
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                  <Star className="h-5 w-5 text-gray-300 fill-current" />
-                </div>
-                <p className="text-gray-600 italic mb-6">
-                  "Excelente servicio de los especialistas. La app facilita mucho la comunicación y el seguimiento."
-                </p>
-                <div className="flex items-center justify-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold">
-                      AL
+                <div className="relative">
+                  <dt>
+                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                      <HeartPulse className="h-6 w-6" aria-hidden="true" />
                     </div>
-                  </div>
-                  <div className="ml-3 text-left">
-                    <div className="text-sm font-medium text-gray-900">Ana L.</div>
-                    <div className="text-sm text-gray-500">Paciente</div>
-                  </div>
+                    <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Atención Humanizada</p>
+                  </dt>
+                  <dd className="mt-2 ml-16 text-base text-gray-500">
+                    Creemos en el trato cálido y cercano. Tu bienestar es nuestra prioridad.
+                  </dd>
                 </div>
-              </div>
-
+              </dl>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- FOOTER SIMPLE --- */}
-      <footer className="bg-gray-800">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-base text-gray-400">
-            &copy; 2024 Propiel. Todos los derechos reservados.
-          </p>
+      {/* --- SERVICES SECTION --- */}
+      <section id="servicios" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
+        <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
+          <div className="relative text-center">
+            <h2 className="text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+              Nuestros Servicios
+            </h2>
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-500">
+              Soluciones dermatológicas completas adaptadas a tus necesidades.
+            </p>
+          </div>
+
+          <div className="relative mt-12 lg:mt-24 lg:grid lg:grid-cols-3 lg:gap-8">
+            {[
+              { title: 'Dermatología Clínica', desc: 'Diagnóstico y tratamiento de enfermedades de la piel.', icon: ShieldCheck },
+              { title: 'Agenda Inteligente', desc: 'Gestiona tus citas médicas fácilmente, 24/7.', icon: Calendar },
+              { title: 'Seguimiento Continuo', desc: 'Historial médico digital y recordatorios.', icon: Activity },
+            ].map((item, index) => (
+              <div key={index} className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 mt-6 lg:mt-0">
+                <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-teal-50 text-teal-600 mx-auto mb-6">
+                  <item.icon className="h-7 w-7" aria-hidden="true" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
+                  <p className="mt-3 text-base text-gray-500">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </footer>
+      </section>
+
+      {/* --- TESTIMONIOS SECTION --- */}
+      <section id="testimonios" className="py-16 bg-white overflow-hidden lg:py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+              Lo que dicen nuestros pacientes
+            </h2>
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-500">
+              Testimonios reales de personas que confiaron en nosotros para el cuidado de su piel.
+            </p>
+          </div>
+
+          <div className="mt-12 lg:mt-20 grid gap-8 lg:grid-cols-3">
+            {/* Testimonio 1 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center mb-4">
+                <img
+                  className="h-12 w-12 rounded-full object-cover"
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                  alt="María González"
+                />
+                <div className="ml-4">
+                  <h4 className="text-lg font-semibold text-gray-900">María González</h4>
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "Excelente atención y profesionalismo. El Dr. Ramírez me ayudó con mi problema de acné y los resultados han sido increíbles. Totalmente recomendado."
+              </p>
+            </div>
+
+            {/* Testimonio 2 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center mb-4">
+                <img
+                  className="h-12 w-12 rounded-full object-cover"
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                  alt="Carlos Méndez"
+                />
+                <div className="ml-4">
+                  <h4 className="text-lg font-semibold text-gray-900">Carlos Méndez</h4>
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "La plataforma es muy fácil de usar y agendar citas es súper rápido. El seguimiento médico digital me permite ver mi historial en cualquier momento."
+              </p>
+            </div>
+
+            {/* Testimonio 3 */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition-shadow">
+              <div className="flex items-center mb-4">
+                <img
+                  className="h-12 w-12 rounded-full object-cover"
+                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                  alt="Ana Martínez"
+                />
+                <div className="ml-4">
+                  <h4 className="text-lg font-semibold text-gray-900">Ana Martínez</h4>
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "Me encanta la atención personalizada. Los especialistas son muy profesionales y siempre están dispuestos a resolver todas mis dudas."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- CONTACTO SECTION --- */}
+      <section id="contacto" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+              Contáctanos
+            </h2>
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-500">
+              ¿Tienes alguna pregunta? Estamos aquí para ayudarte.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Formulario de Contacto */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Envíanos un mensaje</h3>
+              <form className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre completo
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+                    placeholder="Tu nombre"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+                    placeholder="+52 123 456 7890"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    Mensaje
+                  </label>
+                  <textarea
+                    id="message"
+                    rows="4"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors resize-none"
+                    placeholder="¿En qué podemos ayudarte?"
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-md hover:shadow-lg"
+                >
+                  <Send className="h-5 w-5 mr-2" />
+                  Enviar Mensaje
+                </button>
+              </form>
+            </div>
+
+            {/* Información de Contacto */}
+            <div className="space-y-8">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Información de contacto</h3>
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
+                        <MapPin className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="text-lg font-semibold text-gray-900">Dirección</h4>
+                      <p className="mt-1 text-gray-600">
+                        Av. Zihuatanejo Pte. 12, Centro<br />
+                        40880 Zihuatanejo, Gro., México
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
+                        <Phone className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="text-lg font-semibold text-gray-900">Teléfono</h4>
+                      <p className="mt-1 text-gray-600">+52 55 1234 5678</p>
+                      <p className="text-sm text-gray-500">Lun - Vie: 9:00 AM - 6:00 PM</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
+                        <Mail className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="text-lg font-semibold text-gray-900">Email</h4>
+                      <p className="mt-1 text-gray-600">contacto@propiel.com</p>
+                      <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-teal-50 rounded-2xl p-8 border border-teal-100">
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Horario de atención</h4>
+                <div className="space-y-2 text-gray-700">
+                  <p className="flex justify-between">
+                    <span className="font-medium">Lunes - Viernes:</span>
+                    <span>9:00 AM - 6:00 PM</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium">Sábado:</span>
+                    <span>10:00 AM - 2:00 PM</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium">Domingo:</span>
+                    <span className="text-gray-500">Cerrado</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
