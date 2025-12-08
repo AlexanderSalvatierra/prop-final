@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 
 /**
- * Generates a professional appointment confirmation PDF (Boarding Pass Style)
+ * Generates a professional appointment confirmation PDF
  * @param {Object} appointment - The appointment data
  * @param {Object} user - The user/patient information
  */
@@ -11,141 +11,212 @@ export const generateAppointmentPDF = (appointment, user) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Corporate colors
-    const tealColor = [13, 148, 136];
-    const darkGray = [60, 60, 60];
-    const lightGray = [243, 244, 246];
+    // Professional color palette
+    const primaryTeal = [13, 148, 136];      // #0D9488
+    const lightTeal = [204, 251, 241];       // #CCFBF1
+    const darkGray = [31, 41, 55];           // #1F2937
+    const mediumGray = [107, 114, 128];      // #6B7280
+    const lightGray = [249, 250, 251];       // #F9FAFB
+    const white = [255, 255, 255];
 
-    // --- HEADER ---
-    doc.setFontSize(24);
-    doc.setTextColor(...tealColor);
+    let yPos = 20;
+
+    // ===== ELEGANT HEADER WITH LOGO AREA =====
+    // Top colored bar
+    doc.setFillColor(...primaryTeal);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+
+    yPos = 25;
+
+    // Logo/Brand area (left side)
+    doc.setFontSize(22);
+    doc.setTextColor(...primaryTeal);
     doc.setFont('helvetica', 'bold');
-    doc.text('Confirmación de Cita', pageWidth / 2, 30, { align: 'center' });
+    doc.text('PROPIEL', 20, yPos);
 
-    doc.setFontSize(10);
-    doc.setTextColor(120, 120, 120);
+    // Clinic info (right side)
+    doc.setFontSize(9);
+    doc.setTextColor(...mediumGray);
     doc.setFont('helvetica', 'normal');
-    doc.text('Propiel - Clínica Dermatológica', pageWidth / 2, 40, { align: 'center' });
+    doc.text('Clínica Dermatológica', pageWidth - 20, yPos - 4, { align: 'right' });
+    doc.text('Av. Zihuatanejo Pte. 12, Centro', pageWidth - 20, yPos + 1, { align: 'right' });
+    doc.text('Zihuatanejo, Guerrero', pageWidth - 20, yPos + 6, { align: 'right' });
 
-    // --- FECHA Y HORA DESTACADAS (Boarding Pass Style) ---
-    let yPos = 60;
+    yPos = 45;
 
-    // Fecha grande y centrada
-    const appointmentDate = new Date(appointment.fecha);
-    doc.setFontSize(28);
-    doc.setTextColor(...tealColor);
+    // Elegant separator line
+    doc.setDrawColor(...primaryTeal);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+
+    yPos = 58;
+
+    // ===== DOCUMENT TITLE =====
+    doc.setFontSize(20);
+    doc.setTextColor(...primaryTeal);
     doc.setFont('helvetica', 'bold');
-    doc.text(appointmentDate.toLocaleDateString('es-ES', {
+    doc.text('Confirmación de Cita', pageWidth / 2, yPos, { align: 'center' });
+
+    yPos = 66;
+    doc.setFontSize(9);
+    doc.setTextColor(...mediumGray);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Propiel - Clínica Dermatológica', pageWidth / 2, yPos, { align: 'center' });
+
+    yPos = 80;
+
+    // ===== DATE & TIME HIGHLIGHT BOX =====
+    const appointmentDate = new Date(appointment.fecha);
+
+    // Create a beautiful gradient-like box effect with borders
+    doc.setFillColor(...lightTeal);
+    doc.setDrawColor(...primaryTeal);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(30, yPos, pageWidth - 60, 45, 4, 4, 'FD');
+
+    // Date and time inside the box
+    yPos += 15;
+
+    doc.setFontSize(18);
+    doc.setTextColor(...primaryTeal);
+    doc.setFont('helvetica', 'bold');
+    const formattedDate = appointmentDate.toLocaleDateString('es-ES', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric'
-    }), pageWidth / 2, yPos, { align: 'center' });
+    });
+    doc.text(formattedDate, pageWidth / 2, yPos, { align: 'center' });
 
-    yPos += 15;
-
-    // Hora grande y centrada
-    doc.setFontSize(32);
+    yPos += 14;
+    doc.setFontSize(26);
     doc.text(`${appointment.hora.slice(0, 5)} hrs`, pageWidth / 2, yPos, { align: 'center' });
 
     yPos += 25;
 
-    // Línea separadora
-    doc.setDrawColor(...tealColor);
-    doc.setLineWidth(0.5);
-    doc.line(30, yPos, pageWidth - 30, yPos);
+    // ===== APPOINTMENT DETAILS SECTION =====
+    // Section header
+    doc.setFillColor(...lightGray);
+    doc.rect(20, yPos, pageWidth - 40, 10, 'F');
 
-    yPos += 20;
-
-    // --- INFORMACIÓN DE LA CITA (Sin emojis, usando bullets) ---
     doc.setFontSize(11);
     doc.setTextColor(...darkGray);
     doc.setFont('helvetica', 'bold');
+    doc.text('DETALLES DE LA CITA', 25, yPos + 7);
 
-    // Paciente
-    doc.text('• Paciente:', 30, yPos);
-    doc.setFont('helvetica', 'normal');
-    const patientName = appointment.pacientes?.nombre || user?.nombre || user?.email || 'Paciente';
-    doc.text(patientName, 70, yPos);
-    yPos += 12;
+    yPos += 18;
 
-    // Doctor (si está disponible)
-    if (appointment.especialistas?.nombre) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('• Doctor:', 30, yPos);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Dr(a). ${appointment.especialistas.nombre}`, 70, yPos);
-        yPos += 12;
-    }
-
-    // Especialidad (si está disponible)
-    if (appointment.especialistas?.especialidad) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('• Especialidad:', 30, yPos);
-        doc.setFont('helvetica', 'normal');
-        doc.text(appointment.especialistas.especialidad, 70, yPos);
-        yPos += 12;
-    }
-
-    // Tipo de Cita
-    doc.setFont('helvetica', 'bold');
-    doc.text('• Tipo de Cita:', 30, yPos);
-    doc.setFont('helvetica', 'normal');
-    doc.text(appointment.tipo || 'Consulta General', 70, yPos);
-    yPos += 12;
-
-    // Ubicación
-    doc.setFont('helvetica', 'bold');
-    doc.text('• Ubicación:', 30, yPos);
-    doc.setFont('helvetica', 'normal');
-    const locationText = doc.splitTextToSize('Av. Zihuatanejo Pte. 12, Centro, Zihuatanejo', pageWidth - 80);
-    doc.text(locationText, 70, yPos);
-    yPos += 12;
-
-    // Estado
-    doc.setFont('helvetica', 'bold');
-    doc.text('• Estado:', 30, yPos);
-    doc.setFont('helvetica', 'normal');
-    doc.text(appointment.estado || 'Confirmada', 70, yPos);
-    yPos += 15;
-
-    // Motivo (si existe)
-    if (appointment.motivo && appointment.motivo.trim()) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('• Motivo:', 30, yPos);
-        yPos += 6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        const splitMotivo = doc.splitTextToSize(appointment.motivo, pageWidth - 60);
-        doc.text(splitMotivo, 35, yPos);
-        yPos += (splitMotivo.length * 5) + 10;
-        doc.setFontSize(11);
-    }
-
-    // --- RECORDATORIO (Caja gris claro) ---
-    yPos += 10;
-    doc.setFillColor(...lightGray);
-    doc.roundedRect(30, yPos, pageWidth - 60, 35, 3, 3, 'F');
+    // Details in a clean two-column layout
+    const leftCol = 25;
+    const rightCol = 95;
+    const lineHeight = 10;
 
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(...mediumGray);
     doc.setFont('helvetica', 'bold');
-    doc.text('RECORDATORIO IMPORTANTE', 35, yPos + 10);
 
+    // Patient Name
+    doc.text('Paciente:', leftCol, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.text('• Por favor, llega 15 minutos antes de tu hora programada.', 35, yPos + 18);
-    doc.text('• Presenta este comprobante en la recepción.', 35, yPos + 25);
+    doc.setTextColor(...darkGray);
+    const patientName = appointment.pacientes?.nombre || user?.nombre || user?.email || 'Paciente';
+    doc.text(patientName, rightCol, yPos);
+    yPos += lineHeight;
 
-    // --- FOOTER ---
-    const footerY = pageHeight - 25;
-    doc.setFontSize(8);
-    doc.setTextColor(140, 140, 140);
+    // Appointment Type
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...mediumGray);
+    doc.text('Tipo de Cita:', leftCol, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...darkGray);
+    doc.text(appointment.tipo || 'Primera Vez', rightCol, yPos);
+    yPos += lineHeight;
+
+    // Location
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...mediumGray);
+    doc.text('Ubicación:', leftCol, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...darkGray);
+    doc.text('Av. Zihuatanejo Pte. 12, Centro, Zihuatanejo', rightCol, yPos);
+    yPos += lineHeight;
+
+    // Status
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...mediumGray);
+    doc.text('Estado:', leftCol, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...primaryTeal);
+    doc.setFont('helvetica', 'bold');
+    doc.text(appointment.estado || 'Confirmada', rightCol, yPos);
+    yPos += lineHeight + 5;
+
+    // Motivo (if exists)
+    if (appointment.motivo && appointment.motivo.trim()) {
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...mediumGray);
+        doc.text('Motivo:', leftCol, yPos);
+        yPos += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...darkGray);
+        const splitMotivo = doc.splitTextToSize(appointment.motivo, pageWidth - 50);
+        doc.text(splitMotivo, leftCol, yPos);
+        yPos += (splitMotivo.length * 4.5) + 8;
+        doc.setFontSize(10);
+    }
+
+    yPos += 5;
+
+    // ===== IMPORTANT REMINDER BOX =====
+    doc.setFillColor(255, 251, 235); // Warm yellow tint
+    doc.setDrawColor(251, 191, 36); // Amber border
+    doc.setLineWidth(0.8);
+    doc.roundedRect(20, yPos, pageWidth - 40, 42, 3, 3, 'FD');
+
+    yPos += 10;
+    doc.setFontSize(11);
+    doc.setTextColor(146, 64, 14); // Amber-900
+    doc.setFont('helvetica', 'bold');
+    doc.text('RECORDATORIO IMPORTANTE', 25, yPos);
+
+    yPos += 8;
+    doc.setFontSize(9);
+    doc.setTextColor(120, 53, 15); // Amber-800
+    doc.setFont('helvetica', 'normal');
+    doc.text('• Por favor, llega 15 minutos antes de tu hora programada.', 25, yPos);
+    yPos += 6;
+    doc.text('• Presenta este comprobante en la recepción.', 25, yPos);
+    yPos += 6;
+    doc.text('• Si necesitas cancelar o reprogramar, contactanos con 24 horas de anticipación.', 25, yPos);
+
+    // ===== FOOTER WITH CONTACT INFO =====
+    const footerY = pageHeight - 30;
+
+    // Separator line
+    doc.setDrawColor(...mediumGray);
+    doc.setLineWidth(0.3);
+    doc.line(20, footerY - 5, pageWidth - 20, footerY - 5);
+
+    // Contact information
+    doc.setFontSize(9);
+    doc.setTextColor(...mediumGray);
+    doc.setFont('helvetica', 'normal');
     doc.text('Propiel - Clínica Dermatológica', pageWidth / 2, footerY, { align: 'center' });
-    doc.text('Tel: (755) 554-1234 | contacto@propiel.com', pageWidth / 2, footerY + 5, { align: 'center' });
+
+    doc.setFontSize(8);
+    doc.text('Tel: (755) 554-1234 | contacto@propiel.com | www.propiel.com', pageWidth / 2, footerY + 5, { align: 'center' });
+
+    // Folio number
+    doc.setFontSize(7);
+    doc.setTextColor(...mediumGray);
     doc.text(`Folio: ${appointment.id || 'N/A'}`, pageWidth / 2, footerY + 10, { align: 'center' });
 
-    // --- SAVE PDF ---
+    // Bottom colored bar
+    doc.setFillColor(...primaryTeal);
+    doc.rect(0, pageHeight - 8, pageWidth, 8, 'F');
+
+    // ===== SAVE PDF =====
     const fileName = `Cita_${patientName.replace(/\s+/g, '_')}_${appointment.fecha}.pdf`;
     doc.save(fileName);
 };
