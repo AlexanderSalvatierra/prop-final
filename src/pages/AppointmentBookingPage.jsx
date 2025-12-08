@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase/client';
 import toast from 'react-hot-toast';
-import { Calendar, Clock, FileText, CheckCircle, AlertCircle, Eraser, User, Stethoscope, Info } from 'lucide-react';
+import { Calendar, Clock, FileText, CheckCircle, AlertCircle, Eraser, User, Stethoscope, Info, CreditCard, Upload, MessageCircle, Eye } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
-import { jsPDF } from 'jspdf';
+import { generateConsentPDF } from '../utils/generateConsentPDF';
 import { sendAppointmentConfirmation } from '../utils/emailService';
 
 export function AppointmentBookingPage() {
@@ -35,6 +35,10 @@ export function AppointmentBookingPage() {
     const [filteredSpecialists, setFilteredSpecialists] = useState([]);
     const [selectedSpecialist, setSelectedSpecialist] = useState(null);
     const [takenSlots, setTakenSlots] = useState([]); // NEW: State for taken slots
+
+    // Payment Receipt State
+    const [paymentReceipt, setPaymentReceipt] = useState(null);
+    const [uploadingReceipt, setUploadingReceipt] = useState(false);
 
     const [formData, setFormData] = useState({
         tipo: 'Primera Vez',
@@ -155,6 +159,32 @@ export function AppointmentBookingPage() {
         sigCanvas.current.clear();
     };
 
+    const handleReceiptChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                toast.error('Solo se permiten archivos JPG, PNG o PDF');
+                return;
+            }
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('El archivo no debe superar 5MB');
+                return;
+            }
+            setPaymentReceipt(file);
+        }
+    };
+
+    const getWhatsAppLink = () => {
+        const message = encodeURIComponent(
+            `Hola, adjunto mi comprobante de pago para la cita en Propiel.`
+        );
+        return `https://wa.me/527551426210?text=${message}`;
+    };
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -170,6 +200,11 @@ export function AppointmentBookingPage() {
 
         if (sigCanvas.current.isEmpty()) {
             toast.error('Por favor firma el consentimiento para continuar');
+            return;
+        }
+
+        if (!paymentReceipt) {
+            toast.error('Por favor sube el comprobante de pago para continuar');
             return;
         }
 
@@ -207,39 +242,39 @@ export function AppointmentBookingPage() {
             }
 
 
-            // 1. Generar PDF
-            const doc = new jsPDF();
+            // 1. Upload Payment Receipt
+            setUploadingReceipt(true);
+            const receiptFileName = `receipts/${user.id}_${Date.now()}_${paymentReceipt.name}`;
+
+            const { data: receiptUploadData, error: receiptUploadError } = await supabase.storage
+                .from('comprobantes')
+                .upload(receiptFileName, paymentReceipt, {
+                    contentType: paymentReceipt.type
+                });
+
+            if (receiptUploadError) {
+                console.error('Receipt upload error:', receiptUploadError);
+                throw new Error('Error al subir el comprobante de pago');
+            }
+
+            // Get public URL for receipt
+            const { data: { publicUrl: receiptPublicUrl } } = supabase.storage
+                .from('comprobantes')
+                .getPublicUrl(receiptFileName);
+
+            setUploadingReceipt(false);
+
+            // 2. Generar PDF usando la utilidad profesional
             const signatureData = sigCanvas.current.toDataURL();
 
-            // Configuración del PDF
-            doc.setFontSize(20);
-            doc.text('Consentimiento Informado', 105, 20, { align: 'center' });
+            const consentData = {
+                patientName: user.nombre || user.email,
+                appointmentType: formData.tipo,
+                signatureDataURL: signatureData,
+                date: new Date()
+            };
 
-            doc.setFontSize(12);
-            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 40);
-            doc.text(`Paciente: ${user.nombre || user.email}`, 20, 50);
-            doc.text(`Especialista: ${selectedSpecialist.nombre} (${selectedSpecialist.especialidad})`, 20, 60);
-
-            doc.setFontSize(10);
-            const legalText = `
-Yo, como paciente, autorizo al equipo de especialistas de PROPIEL a realizar las evaluaciones, 
-diagnósticos y tratamientos dermatológicos necesarios para mi salud.
-
-Entiendo que toda mi información médica será tratada con estricta confidencialidad.
-
-He sido informado de que todo procedimiento médico conlleva ciertos riesgos, aunque mínimos, 
-y acepto proceder bajo mi propia voluntad.
-
-Me comprometo a proporcionar información veraz sobre mi estado de salud.
-            `;
-            doc.text(legalText, 20, 80);
-
-            // Agregar firma
-            doc.text('Firma del Paciente:', 20, 150);
-            doc.addImage(signatureData, 'PNG', 20, 160, 100, 40);
-
-            // 2. Subir PDF a Supabase
-            const pdfBlob = doc.output('blob');
+            const pdfBlob = generateConsentPDF(consentData);
             const fileName = `consents/${user.id}_${Date.now()}.pdf`;
 
             const { data: uploadData, error: uploadError } = await supabase.storage
@@ -267,7 +302,8 @@ Me comprometo a proporcionar información veraz sobre mi estado de salud.
                         tipo: formData.tipo,
                         motivo: formData.motivo,
                         estado: 'Pendiente',
-                        consentimiento_url: publicUrl
+                        consentimiento_url: publicUrl,
+                        comprobante_url: receiptPublicUrl // NEW: Payment receipt URL
                     }
                 ]);
 
@@ -547,20 +583,126 @@ Me comprometo a proporcionar información veraz sobre mi estado de salud.
                                 </div>
                             </div>
 
+                            {/* Paso 5: Pago de Anticipo */}
+                            <div className="space-y-4 mt-8">
+                                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <span className="bg-teal-100 text-teal-800 w-6 h-6 rounded-full flex items-center justify-center text-sm">5</span>
+                                    Pago de Anticipo
+                                </h3>
+
+                                {/* Bank Details Card */}
+                                <div className="bg-gradient-to-br from-teal-600 to-teal-700 p-6 rounded-xl text-white shadow-lg">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <CreditCard className="w-6 h-6" />
+                                        <h4 className="font-bold text-lg">Datos Bancarios</h4>
+                                    </div>
+                                    <div className="space-y-2 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-teal-100">Banco:</span>
+                                            <span className="font-semibold">BBVA (Ficticio)</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-teal-100">Cuenta:</span>
+                                            <span className="font-mono font-semibold">1234 5678 9012</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-teal-100">CLABE:</span>
+                                            <span className="font-mono font-semibold">012345678901234567</span>
+                                        </div>
+                                        <div className="flex justify-between border-t border-white/20 pt-2 mt-2">
+                                            <span className="text-teal-100">Monto a depositar:</span>
+                                            <span className="font-bold text-xl">
+                                                ${selectedSpecialty && COSTS[selectedSpecialty]
+                                                    ? `${(COSTS[selectedSpecialty] * 0.2).toFixed(0)} MXN`
+                                                    : '--- MXN'}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-teal-100 mt-2">
+                                            (20% del costo total de la consulta: ${selectedSpecialty && COSTS[selectedSpecialty] ? COSTS[selectedSpecialty] : '---'} MXN)
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* File Upload Section */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Subir Comprobante de Pago
+                                    </label>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:border-teal-400 transition-colors">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="p-3 bg-teal-50 rounded-full">
+                                                <Upload className="w-6 h-6 text-teal-600" />
+                                            </div>
+                                            <div className="text-center">
+                                                <label htmlFor="receipt-upload" className="cursor-pointer">
+                                                    <span className="text-teal-600 hover:text-teal-700 font-medium">
+                                                        Seleccionar archivo
+                                                    </span>
+                                                    <input
+                                                        id="receipt-upload"
+                                                        type="file"
+                                                        accept="image/jpeg,image/jpg,image/png,application/pdf"
+                                                        onChange={handleReceiptChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    JPG, PNG o PDF (máx. 5MB)
+                                                </p>
+                                            </div>
+                                            {paymentReceipt && (
+                                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-teal-200">
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm text-gray-700 font-medium">
+                                                        {paymentReceipt.name}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPaymentReceipt(null)}
+                                                        className="text-red-500 hover:text-red-700 ml-2"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* WhatsApp Alternative */}
+                                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                                    <MessageCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-sm text-gray-700">
+                                            <span className="font-medium">Opción alternativa:</span> También puedes enviar tu comprobante por WhatsApp
+                                        </p>
+                                    </div>
+                                    <a
+                                        href={getWhatsAppLink()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2 whitespace-nowrap"
+                                    >
+                                        <MessageCircle className="w-4 h-4" />
+                                        Enviar
+                                    </a>
+                                </div>
+                            </div>
+
                             {/* Botón Submit */}
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || uploadingReceipt}
                                 className={`w-full py-4 px-6 rounded-xl text-white font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2
-                                    ${loading
+                                    ${loading || uploadingReceipt
                                         ? 'bg-gray-400 cursor-not-allowed'
                                         : 'bg-teal-600 hover:bg-teal-700 hover:shadow-lg hover:-translate-y-0.5'
                                     }`}
                             >
-                                {loading ? (
+                                {loading || uploadingReceipt ? (
                                     <>
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Procesando...
+                                        {uploadingReceipt ? 'Subiendo comprobante...' : 'Procesando...'}
                                     </>
                                 ) : (
                                     <>

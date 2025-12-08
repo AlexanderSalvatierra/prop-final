@@ -14,7 +14,10 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage'; // Import RegisterPage
 import { AboutPage } from './pages/AboutPage';
-import { ContactPage } from './pages/ContactPage';
+import { ServicesPage } from './pages/public/ServicesPage';
+import { GalleryPage } from './pages/public/GalleryPage';
+import { TestimonialsPage } from './pages/public/TestimonialsPage';
+import { ContactPage } from './pages/public/ContactPage';
 
 // Páginas Privadas (Dashboard y otras)
 import { DashboardPage } from './pages/DashboardPage';
@@ -38,10 +41,13 @@ function App() {
         {/* --- RUTAS PÚBLICAS --- */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/servicios" element={<ServicesPage />} />
+          <Route path="/galeria" element={<GalleryPage />} />
+          <Route path="/testimonios" element={<TestimonialsPage />} />
+          <Route path="/contacto" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} /> {/* New Route */}
           <Route path="/conocenos" element={<AboutPage />} />
-          <Route path="/contacto" element={<ContactPage />} />
         </Route>
 
         {/* --- RUTAS PRIVADAS (Protegidas) --- */}

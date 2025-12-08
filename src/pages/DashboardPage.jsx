@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usePatients } from '../context/PatientContext';
 import { supabase } from '../supabase/client';
-import { Calendar, Users, Activity, Clock, Sun, FileText, CheckCircle, XCircle, DollarSign, TrendingUp, Download } from 'lucide-react';
+import { Calendar, Users, Activity, Clock, Sun, FileText, CheckCircle, XCircle, DollarSign, TrendingUp, Download, Eye } from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -21,20 +21,23 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import { motion } from 'framer-motion';
+import PageTransition from '../components/ui/PageTransition';
+import SpecialistCalendar from '../components/dashboard/SpecialistCalendar';
 
 // Componente Widget Mejorado
 function DashboardWidget({ title, children, icon: Icon, color = "teal" }) {
   const colorClasses = {
-    teal: "bg-teal-50 text-teal-600",
-    blue: "bg-blue-50 text-blue-600",
-    purple: "bg-purple-50 text-purple-600",
-    orange: "bg-orange-50 text-orange-600",
+    teal: "bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400",
+    blue: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+    purple: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+    orange: "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
   };
 
   return (
-    <div className="relative bg-white p-4 lg:p-8 rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="relative bg-white dark:bg-slate-800 p-4 lg:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-white">{title}</h3>
         {Icon && (
           <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
             <Icon className="w-6 h-6" />
@@ -46,7 +49,7 @@ function DashboardWidget({ title, children, icon: Icon, color = "teal" }) {
       </div>
       {/* Icono decorativo de fondo */}
       {Icon && (
-        <Icon className="absolute -bottom-4 -right-4 w-24 h-24 text-gray-50 opacity-50 transform rotate-12 pointer-events-none" />
+        <Icon className="absolute -bottom-4 -right-4 w-24 h-24 text-gray-50 dark:text-slate-700 opacity-50 transform rotate-12 pointer-events-none" />
       )}
     </div>
   );
@@ -61,6 +64,7 @@ export function DashboardPage() {
   const [totalMyPatients, setTotalMyPatients] = useState(0); // Nuevo estado para contador de pacientes propios
   const [paymentsData, setPaymentsData] = useState([]); // Datos de pagos para gráficas
   const [appointmentsData, setAppointmentsData] = useState([]); // Datos de citas para gráficas
+  const [allAppointmentsWithPatients, setAllAppointmentsWithPatients] = useState([]); // Todas las citas con datos de pacientes para el calendario
   const [loading, setLoading] = useState(true);
 
   // Patient prescriptions state
@@ -191,11 +195,24 @@ export function DashboardPage() {
           // 5. Obtener TODAS las citas del especialista para gráfica de estados
           const { data: allAppointmentsData, error: allAppointmentsError } = await supabase
             .from('citas')
-            .select('estado, fecha, created_at')
+            .select('estado, fecha')
             .eq('id_especialista', user.id);
 
           if (!allAppointmentsError && allAppointmentsData) {
             setAppointmentsData(allAppointmentsData);
+          } else {
+            setAppointmentsData([]);
+          }
+
+          // 6. Obtener TODAS las citas del especialista con datos de pacientes para el calendario
+          const { data: calendarAppointmentsData, error: calendarAppointmentsError } = await supabase
+            .from('citas')
+            .select('*, pacientes(nombre, email)')
+            .eq('id_especialista', user.id)
+            .order('fecha', { ascending: true });
+
+          if (!calendarAppointmentsError && calendarAppointmentsData) {
+            setAllAppointmentsWithPatients(calendarAppointmentsData);
           }
         }
       } catch (error) {
@@ -248,7 +265,8 @@ export function DashboardPage() {
       'Confirmada': 0,
       'Pendiente': 0,
       'Cancelada': 0,
-      'Rechazada': 0
+      'Completada': 0,
+      'No Asistió': 0
     };
 
     appointmentsData.forEach(appointment => {
@@ -258,10 +276,11 @@ export function DashboardPage() {
     });
 
     return [
-      { name: 'Confirmada', value: statusCounts['Confirmada'], color: '#10b981' }, // green-500
-      { name: 'Pendiente', value: statusCounts['Pendiente'], color: '#f59e0b' }, // amber-500
-      { name: 'Cancelada', value: statusCounts['Cancelada'], color: '#ef4444' }, // red-500
-      { name: 'Rechazada', value: statusCounts['Rechazada'], color: '#6b7280' } // gray-500
+      { name: 'Confirmadas', value: statusCounts['Confirmada'], color: '#0d9488' }, // teal-600
+      { name: 'Pendientes', value: statusCounts['Pendiente'], color: '#f59e0b' }, // amber-500
+      { name: 'Canceladas', value: statusCounts['Cancelada'], color: '#ef4444' }, // red-500
+      { name: 'Completadas', value: statusCounts['Completada'], color: '#10b981' }, // green-500
+      { name: 'No Asistió', value: statusCounts['No Asistió'], color: '#6b7280' } // gray-500
     ].filter(item => item.value > 0); // Solo mostrar estados con datos
   }, [appointmentsData]);
 
@@ -299,12 +318,12 @@ export function DashboardPage() {
   };
 
   return (
-    <div>
+    <PageTransition>
       <header className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          {getGreeting()}, <span className="text-teal-600">{user?.nombre || user?.email.split('@')[0]}</span>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          {getGreeting()}, <span className="text-teal-600 dark:text-teal-400">{user?.nombre || user?.email.split('@')[0]}</span>
         </h1>
-        <p className="text-gray-500 mt-2">Aquí tienes un resumen de tu actividad hoy.</p>
+        <p className="text-gray-500 dark:text-slate-400 mt-2">Aquí tienes un resumen de tu actividad hoy.</p>
       </header>
 
       {/* --- DASHBOARD DE ESPECIALISTA --- */}
@@ -319,76 +338,95 @@ export function DashboardPage() {
               </>
             ) : (
               <>
-                <DashboardWidget title="Pacientes Totales" icon={Users} color="teal">
-                  <p className="text-4xl font-bold text-gray-800">{totalMyPatients}</p>
-                  <p className="text-sm text-gray-500 mt-1">Asignados a ti</p>
-                </DashboardWidget>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0 * 0.1 }}
+                >
+                  <DashboardWidget title="Pacientes Totales" icon={Users} color="teal">
+                    <p className="text-4xl font-bold text-gray-800 dark:text-white">{totalMyPatients}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Asignados a ti</p>
+                  </DashboardWidget>
+                </motion.div>
 
-                <DashboardWidget title="Citas Hoy" icon={Calendar} color="blue">
-                  <p className="text-4xl font-bold text-gray-800">
-                    {todayAppointmentsCount}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {todayAppointmentsCount > 0 ? "Revisa tu agenda" : "No hay citas programadas"}
-                  </p>
-                </DashboardWidget>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 * 0.1 }}
+                >
+                  <DashboardWidget title="Citas Hoy" icon={Calendar} color="blue">
+                    <p className="text-4xl font-bold text-gray-800 dark:text-white">
+                      {todayAppointmentsCount}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                      {todayAppointmentsCount > 0 ? "Revisa tu agenda" : "No hay citas programadas"}
+                    </p>
+                  </DashboardWidget>
+                </motion.div>
 
-                <DashboardWidget title="Actividad Reciente" icon={Activity} color="purple">
-                  <ul className="space-y-2 mt-1">
-                    <li className="text-sm text-gray-600 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      Consulta finalizada
-                    </li>
-                    <li className="text-sm text-gray-600 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                      Nuevo paciente registrado
-                    </li>
-                  </ul>
-                </DashboardWidget>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2 * 0.1 }}
+                >
+                  <DashboardWidget title="Actividad Reciente" icon={Activity} color="purple">
+                    <ul className="space-y-2 mt-1">
+                      <li className="text-sm text-gray-600 dark:text-slate-300 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                        Consulta finalizada
+                      </li>
+                      <li className="text-sm text-gray-600 dark:text-slate-300 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                        Nuevo paciente registrado
+                      </li>
+                    </ul>
+                  </DashboardWidget>
+                </motion.div>
               </>
             )}
           </div>
 
           {/* Sección de Solicitudes Pendientes */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 lg:p-8 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-orange-500" />
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="p-4 lg:p-8 border-b border-gray-100 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-orange-500 dark:text-orange-400" />
                 Solicitudes de Citas Pendientes
               </h3>
             </div>
 
             {pendingAppointments.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-gray-500 dark:text-slate-400">
                 No hay solicitudes pendientes en este momento.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-gray-600 text-sm">
+                  <thead className="bg-gray-50 dark:bg-slate-900 text-gray-600 dark:text-slate-300 text-sm">
                     <tr>
                       <th className="p-4 font-medium">Paciente</th>
                       <th className="p-4 font-medium">Fecha y Hora</th>
                       <th className="p-4 font-medium">Tipo</th>
                       <th className="p-4 font-medium">Consentimiento</th>
+                      <th className="p-4 font-medium">Comprobante Pago</th>
                       <th className="p-4 font-medium text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                     {pendingAppointments.map((app) => (
-                      <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={app.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                         <td className="p-4">
-                          <p className="font-medium text-gray-800">{app.pacientes?.nombre || 'Desconocido'}</p>
-                          <p className="text-xs text-gray-500">{app.pacientes?.email}</p>
+                          <p className="font-medium text-gray-800 dark:text-white">{app.pacientes?.nombre || 'Desconocido'}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{app.pacientes?.email}</p>
                         </td>
                         <td className="p-4">
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-gray-800 dark:text-white font-medium">
                             {new Date(app.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                           </p>
-                          <p className="text-xs text-gray-500">{app.hora.slice(0, 5)} hrs</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{app.hora.slice(0, 5)} hrs</p>
                         </td>
                         <td className="p-4">
-                          <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded text-xs font-medium">
+                          <span className="px-2 py-1 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded text-xs font-medium">
                           </span>
                         </td>
                         <td className="p-4">
@@ -404,6 +442,25 @@ export function DashboardPage() {
                             </a>
                           ) : (
                             <span className="text-gray-400 text-xs italic">No firmado</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          {app.comprobante_url ? (
+                            <a
+                              href={app.comprobante_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors text-sm font-medium"
+                              title="Ver comprobante de pago"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Ver Pago
+                            </a>
+                          ) : (
+                            <span className="text-orange-500 text-xs font-medium flex items-center gap-1">
+                              <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                              No enviado
+                            </span>
                           )}
                         </td>
                         <td className="p-4 text-right">
@@ -435,12 +492,17 @@ export function DashboardPage() {
           {/* PASO 3: Sección de Gráficas Estadísticas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
             {/* Gráfica 1: Ingresos por Mes (Barras) */}
-            <div className="bg-white p-4 lg:p-8 rounded-xl shadow-lg border border-gray-100">
+            <motion.div
+              className="bg-white dark:bg-slate-800 p-4 lg:p-8 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-teal-50 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-teal-600" />
+                <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-800">Ingresos por Mes</h3>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Ingresos por Mes</h3>
               </div>
 
               {monthlyIncomeData.length === 0 ? (
@@ -479,15 +541,20 @@ export function DashboardPage() {
                   </BarChart>
                 </ResponsiveContainer>
               )}
-            </div>
+            </motion.div>
 
             {/* Gráfica 2: Distribución de Citas (Pastel/Donut) */}
-            <div className="bg-white p-4 lg:p-8 rounded-xl shadow-lg border border-gray-100">
+            <motion.div
+              className="bg-white dark:bg-slate-800 p-4 lg:p-8 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
               <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-purple-50 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-800">Distribución de Citas</h3>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Distribución de Citas</h3>
               </div>
 
               {appointmentStatusData.length === 0 ? (
@@ -533,8 +600,27 @@ export function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
               )}
-            </div>
+            </motion.div>
           </div>
+
+          {/* PASO 2: Sección de Calendario Médico */}
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                Mi Agenda
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                Visualiza todas tus citas en un calendario interactivo
+              </p>
+            </div>
+            <SpecialistCalendar citas={allAppointmentsWithPatients} />
+          </motion.div>
         </div>
       )}
 
@@ -551,39 +637,39 @@ export function DashboardPage() {
             ) : (
               <>
                 {/* Próxima Cita */}
-                <div className="bg-white p-4 lg:p-8 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-teal-500"></div>
+                <div className="bg-white dark:bg-slate-800 p-4 lg:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-teal-500 dark:bg-teal-400"></div>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-1">Próxima Cita</h3>
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">Próxima Cita</h3>
                       {nextAppointment && (
-                        <p className="text-sm text-gray-500 mb-4">
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
                           {nextAppointment.tipo}
                         </p>
                       )}
                     </div>
-                    <div className="p-2 bg-teal-50 rounded-lg">
-                      <Calendar className="w-6 h-6 text-teal-600" />
+                    <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                      <Calendar className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                     </div>
                   </div>
 
                   {nextAppointment ? (
                     <>
                       <div className="flex items-center gap-3 mt-2">
-                        <Clock className="w-5 h-5 text-teal-500" />
-                        <span className="text-2xl font-bold text-gray-800">
+                        <Clock className="w-5 h-5 text-teal-500 dark:text-teal-400" />
+                        <span className="text-2xl font-bold text-gray-800 dark:text-white">
                           {nextAppointment.hora?.slice(0, 5)}
                         </span>
                       </div>
-                      <p className="text-gray-600 mt-1 font-medium">
+                      <p className="text-gray-600 dark:text-slate-300 mt-1 font-medium">
                         {formatDateForDisplay(nextAppointment.fecha)}
                       </p>
-                      <p className="text-sm text-gray-400 mt-4">Dr. Especialista</p>
+                      <p className="text-sm text-gray-400 dark:text-slate-500 mt-4">Dr. Especialista</p>
                     </>
                   ) : (
                     <div className="mt-4 flex flex-col items-center text-center">
-                      <Calendar className="w-12 h-12 text-gray-300 mb-2" />
-                      <p className="text-gray-600 font-medium mb-3">No tienes citas programadas. ¡Cuida tu salud hoy!</p>
+                      <Calendar className="w-12 h-12 text-gray-300 dark:text-slate-600 mb-2" />
+                      <p className="text-gray-600 dark:text-slate-300 font-medium mb-3">No tienes citas programadas. ¡Cuida tu salud hoy!</p>
                       <Link
                         to="/agendar"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
@@ -596,17 +682,17 @@ export function DashboardPage() {
                 </div>
 
                 {/* Recomendación del Día (Rotativa) */}
-                <div className="bg-gradient-to-br from-teal-50 to-white p-4 lg:p-8 rounded-xl border border-teal-100 flex flex-col justify-center relative overflow-hidden">
+                <div className="bg-gradient-to-br from-teal-50 to-white dark:from-slate-800 dark:to-slate-800 p-4 lg:p-8 rounded-xl border border-teal-100 dark:border-slate-700 flex flex-col justify-center relative overflow-hidden">
                   <div className="flex items-center gap-2 mb-3 relative z-10">
                     <Sun className="w-5 h-5 text-orange-400" />
-                    <h3 className="text-lg font-semibold text-teal-800">Tip del Día</h3>
+                    <h3 className="text-lg font-semibold text-teal-800 dark:text-teal-400">Tip del Día</h3>
                   </div>
 
                   <div className="relative h-24">
                     {HEALTH_TIPS.map((tip, index) => (
                       <p
                         key={index}
-                        className={`text-teal-700 italic text-lg leading-relaxed absolute top-0 left-0 w-full transition-opacity duration-1000 ${index === currentTipIndex ? 'opacity-100' : 'opacity-0'
+                        className={`text-teal-700 dark:text-teal-300 italic text-lg leading-relaxed absolute top-0 left-0 w-full transition-opacity duration-1000 ${index === currentTipIndex ? 'opacity-100' : 'opacity-0'
                           }`}
                       >
                         "{tip}"
@@ -631,7 +717,7 @@ export function DashboardPage() {
 
           {/* Accesos Rápidos */}
           <div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Accesos Rápidos</h3>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Accesos Rápidos</h3>
             <div className="flex flex-wrap gap-4">
               <Link to="/agendar" className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-lg shadow-md hover:bg-teal-700 hover:shadow-lg transition-all font-medium">
                 <Calendar className="w-5 h-5" />
@@ -646,8 +732,8 @@ export function DashboardPage() {
 
           {/* Mis Recetas Section */}
           <div className="mt-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-teal-600" />
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+              <FileText className="w-6 h-6 text-teal-600 dark:text-teal-400" />
               Mis Recetas
             </h3>
             {loadingPrescriptions ? (
@@ -662,11 +748,11 @@ export function DashboardPage() {
                     : JSON.parse(prescription.medicamentos || '[]');
 
                   return (
-                    <div key={prescription.id} className="bg-white p-5 rounded-xl border border-gray-100 hover:shadow-lg transition-shadow">
+                    <div key={prescription.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-gray-100 dark:border-slate-700 hover:shadow-lg transition-shadow">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-1">Receta Médica</h4>
-                          <p className="text-sm text-gray-500">
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Receta Médica</h4>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">
                             {new Date(prescription.fecha).toLocaleDateString('es-MX', {
                               year: 'numeric',
                               month: 'long',
@@ -674,24 +760,24 @@ export function DashboardPage() {
                             })}
                           </p>
                         </div>
-                        <div className="p-2 bg-teal-50 rounded-lg">
-                          <FileText className="w-5 h-5 text-teal-600" />
+                        <div className="p-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+                          <FileText className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                        <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                           Medicamentos ({medications.length}):
                         </p>
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 dark:text-slate-300 space-y-1">
                           {medications.slice(0, 2).map((med, idx) => (
                             <li key={idx} className="flex items-start">
-                              <span className="text-teal-600 mr-2">•</span>
+                              <span className="text-teal-600 dark:text-teal-400 mr-2">•</span>
                               <span className="truncate">{med.nombre}</span>
                             </li>
                           ))}
                           {medications.length > 2 && (
-                            <li className="text-gray-400 text-xs italic ml-4">
+                            <li className="text-gray-400 dark:text-slate-500 text-xs italic ml-4">
                               +{medications.length - 2} más...
                             </li>
                           )}
@@ -719,15 +805,15 @@ export function DashboardPage() {
                 })}
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-12 text-center">
-                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-600 font-medium mb-2">No tienes recetas registradas</p>
-                <p className="text-gray-500 text-sm">Las recetas generadas por tu médico aparecerán aquí</p>
+              <div className="bg-gray-50 dark:bg-slate-900 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700 p-12 text-center">
+                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-slate-600" />
+                <p className="text-gray-600 dark:text-slate-300 font-medium mb-2">No tienes recetas registradas</p>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">Las recetas generadas por tu médico aparecerán aquí</p>
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

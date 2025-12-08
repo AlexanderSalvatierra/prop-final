@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Calendar, Activity, Star, HeartPulse, MapPin, Phone, Mail, Send } from 'lucide-react';
+import { ShieldCheck, Calendar, Activity, Star, HeartPulse, MapPin, Phone, Mail } from 'lucide-react';
 
 export function LandingPage() {
   return (
@@ -114,7 +114,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* --- SERVICES SECTION --- */}
+      {/* --- SERVICES SECTION (Preview) --- */}
       <section id="servicios" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
         <div className="relative max-w-xl mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
           <div className="relative text-center">
@@ -126,7 +126,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="relative mt-12 lg:mt-24 lg:grid lg:grid-cols-3 lg:gap-8">
+          <div className="relative mt-12 lg:mt-16 lg:grid lg:grid-cols-3 lg:gap-8">
             {[
               { title: 'Dermatología Clínica', desc: 'Diagnóstico y tratamiento de enfermedades de la piel.', icon: ShieldCheck },
               { title: 'Agenda Inteligente', desc: 'Gestiona tus citas médicas fácilmente, 24/7.', icon: Calendar },
@@ -145,10 +145,20 @@ export function LandingPage() {
               </div>
             ))}
           </div>
+
+          {/* CTA to Services Page */}
+          <div className="mt-12 text-center">
+            <Link
+              to="/servicios"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              Ver todos los servicios
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* --- TESTIMONIOS SECTION --- */}
+      {/* --- TESTIMONIOS SECTION (Preview) --- */}
       <section id="testimonios" className="py-16 bg-white overflow-hidden lg:py-24">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -160,7 +170,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-12 lg:mt-20 grid gap-8 lg:grid-cols-3">
+          <div className="mt-12 lg:mt-16 grid gap-8 lg:grid-cols-3">
             {/* Testimonio 1 */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition-shadow">
               <div className="flex items-center mb-4">
@@ -179,7 +189,7 @@ export function LandingPage() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "Excelente atención y profesionalismo. El Dr. Ramírez me ayudó con mi problema de acné y los resultados han sido increíbles. Totalmente recomendado."
+                "Excelente atención y profesionalismo. El Dr. Ramírez me ayudó con mi problema de acné y los resultados han sido increíbles."
               </p>
             </div>
 
@@ -201,7 +211,7 @@ export function LandingPage() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "La plataforma es muy fácil de usar y agendar citas es súper rápido. El seguimiento médico digital me permite ver mi historial en cualquier momento."
+                "La plataforma es muy fácil de usar y agendar citas es súper rápido. El seguimiento médico digital es excelente."
               </p>
             </div>
 
@@ -223,14 +233,24 @@ export function LandingPage() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "Me encanta la atención personalizada. Los especialistas son muy profesionales y siempre están dispuestos a resolver todas mis dudas."
+                "Me encanta la atención personalizada. Los especialistas son muy profesionales y siempre están dispuestos a ayudar."
               </p>
             </div>
+          </div>
+
+          {/* CTA to Testimonials Page */}
+          <div className="mt-12 text-center">
+            <Link
+              to="/testimonios"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-teal-700 bg-teal-100 hover:bg-teal-200 transition-colors"
+            >
+              Ver más testimonios
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* --- CONTACTO SECTION --- */}
+      {/* --- CONTACTO SECTION (Preview) --- */}
       <section id="contacto" className="py-16 bg-gray-50 overflow-hidden lg:py-24">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -242,130 +262,47 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Formulario de Contacto */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Envíanos un mensaje</h3>
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
-                    placeholder="Tu nombre"
-                  />
+          <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-100 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              {/* Address */}
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600 mx-auto mb-4">
+                  <MapPin className="h-6 w-6" />
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
-                    placeholder="tu@email.com"
-                  />
+                <h4 className="font-semibold text-gray-900 mb-2">Dirección</h4>
+                <p className="text-sm text-gray-600">
+                  Av. Zihuatanejo Pte. 12<br />
+                  Zihuatanejo, Gro.
+                </p>
+              </div>
+
+              {/* Phone */}
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600 mx-auto mb-4">
+                  <Phone className="h-6 w-6" />
                 </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
-                    placeholder="+52 123 456 7890"
-                  />
+                <h4 className="font-semibold text-gray-900 mb-2">Teléfono</h4>
+                <p className="text-sm text-gray-600">+52 55 1234 5678</p>
+              </div>
+
+              {/* Email */}
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600 mx-auto mb-4">
+                  <Mail className="h-6 w-6" />
                 </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Mensaje
-                  </label>
-                  <textarea
-                    id="message"
-                    rows="4"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors resize-none"
-                    placeholder="¿En qué podemos ayudarte?"
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-md hover:shadow-lg"
-                >
-                  <Send className="h-5 w-5 mr-2" />
-                  Enviar Mensaje
-                </button>
-              </form>
+                <h4 className="font-semibold text-gray-900 mb-2">Email</h4>
+                <p className="text-sm text-gray-600">contacto@propiel.com</p>
+              </div>
             </div>
 
-            {/* Información de Contacto */}
-            <div className="space-y-8">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">Información de contacto</h3>
-                <div className="space-y-6">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
-                        <MapPin className="h-6 w-6" />
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <h4 className="text-lg font-semibold text-gray-900">Dirección</h4>
-                      <p className="mt-1 text-gray-600">
-                        Av. Zihuatanejo Pte. 12, Centro<br />
-                        40880 Zihuatanejo, Gro., México
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
-                        <Phone className="h-6 w-6" />
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <h4 className="text-lg font-semibold text-gray-900">Teléfono</h4>
-                      <p className="mt-1 text-gray-600">+52 55 1234 5678</p>
-                      <p className="text-sm text-gray-500">Lun - Vie: 9:00 AM - 6:00 PM</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-teal-50 text-teal-600">
-                        <Mail className="h-6 w-6" />
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <h4 className="text-lg font-semibold text-gray-900">Email</h4>
-                      <p className="mt-1 text-gray-600">contacto@propiel.com</p>
-                      <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-teal-50 rounded-2xl p-8 border border-teal-100">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Horario de atención</h4>
-                <div className="space-y-2 text-gray-700">
-                  <p className="flex justify-between">
-                    <span className="font-medium">Lunes - Viernes:</span>
-                    <span>9:00 AM - 6:00 PM</span>
-                  </p>
-                  <p className="flex justify-between">
-                    <span className="font-medium">Sábado:</span>
-                    <span>10:00 AM - 2:00 PM</span>
-                  </p>
-                  <p className="flex justify-between">
-                    <span className="font-medium">Domingo:</span>
-                    <span className="text-gray-500">Cerrado</span>
-                  </p>
-                </div>
-              </div>
+            {/* CTA to Contact Page */}
+            <div className="text-center">
+              <Link
+                to="/contacto"
+                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Ir a Contacto
+              </Link>
             </div>
           </div>
         </div>

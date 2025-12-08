@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Users, LogOut, Menu, Calendar, User, Activity, CreditCard, Pill } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Menu, Calendar, User, Activity, CreditCard, Pill, Moon, Sun } from 'lucide-react';
+import { useDarkMode } from '../../hooks/useDarkMode';
 
 // Componente NavLink personalizado
 function SidebarLink({ to, icon: Icon, children }) {
@@ -12,8 +13,8 @@ function SidebarLink({ to, icon: Icon, children }) {
       className={({ isActive }) =>
         `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group
          ${isActive
-          ? 'bg-white text-teal-600 shadow-sm font-semibold'
-          : 'text-teal-100 hover:bg-teal-700/50 hover:text-white'
+          ? 'bg-white dark:bg-slate-800 text-teal-600 dark:text-teal-400 shadow-sm font-semibold'
+          : 'text-teal-100 dark:text-slate-300 hover:bg-teal-700/50 dark:hover:bg-slate-800/50 hover:text-white dark:hover:text-white'
         }`
       }
     >
@@ -27,6 +28,7 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [colorTheme, setTheme] = useDarkMode();
 
   const handleLogout = () => {
     logout();
@@ -34,9 +36,9 @@ export function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 flex-col lg:flex-row">
+    <div className="flex h-screen bg-gray-50 dark:bg-slate-900 flex-col lg:flex-row">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-teal-600 text-white p-4 flex items-center justify-between shadow-md">
+      <div className="lg:hidden bg-teal-600 dark:bg-slate-950 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center space-x-3">
           <img src="/propiel-logo.png" alt="Propiel" className="h-8 w-auto" />
           <span className="text-xl font-bold tracking-tight">Propiel</span>
@@ -59,7 +61,7 @@ export function AppLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 p-6 shadow-2xl flex flex-col
+        fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 dark:bg-slate-950 p-6 shadow-2xl flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:inset-auto lg:flex
@@ -93,9 +95,9 @@ export function AppLayout() {
         </nav>
 
         {/* Footer del Sidebar con Logout */}
-        <div className="mt-auto pt-6 border-t border-teal-500">
+        <div className="mt-auto pt-6 border-t border-teal-500 dark:border-slate-800">
           <div className="flex items-center space-x-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-teal-400">
+            <div className="w-8 h-8 rounded-full bg-teal-500 dark:bg-slate-700 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-teal-400 dark:border-slate-600">
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
@@ -103,16 +105,35 @@ export function AppLayout() {
               )}
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs text-teal-200 font-medium uppercase tracking-wider">Cuenta</p>
-              <Link to="/perfil" className="text-sm font-medium text-white truncate hover:underline block">
+              <p className="text-xs text-teal-200 dark:text-slate-400 font-medium uppercase tracking-wider">Cuenta</p>
+              <Link to="/perfil" className="text-sm font-medium text-white dark:text-slate-200 truncate hover:underline block">
                 {user?.email}
               </Link>
             </div>
           </div>
 
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={() => setTheme(colorTheme)}
+            className="flex items-center justify-center w-full mb-3 text-teal-100 dark:text-slate-300 hover:text-white dark:hover:text-white text-sm font-medium transition-all hover:bg-teal-700/30 dark:hover:bg-slate-800/50 rounded-lg py-2"
+            aria-label="Toggle Dark Mode"
+          >
+            {colorTheme === 'dark' ? (
+              <>
+                <Moon className="w-4 h-4 mr-2 transition-transform duration-300 rotate-0 hover:rotate-12" />
+                Modo Oscuro
+              </>
+            ) : (
+              <>
+                <Sun className="w-4 h-4 mr-2 transition-transform duration-300 rotate-0 hover:rotate-90" />
+                Modo Claro
+              </>
+            )}
+          </button>
+
           <Link
             to="/perfil"
-            className="flex items-center justify-center w-full mb-3 text-teal-100 hover:text-white text-sm font-medium transition-colors"
+            className="flex items-center justify-center w-full mb-3 text-teal-100 dark:text-slate-300 hover:text-white dark:hover:text-white text-sm font-medium transition-colors"
           >
             <User className="w-4 h-4 mr-2" />
             Mi Perfil

@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { Calendar } from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
 import { AppointmentItem } from '../components/AppointmentItem';
+import PageTransition from '../components/ui/PageTransition';
 
 export function MyAppointmentsPage() {
     const { user } = useAuth();
@@ -73,60 +74,62 @@ export function MyAppointmentsPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-gray-800">Mis Citas Médicas</h1>
+        <PageTransition>
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Mis Citas Médicas</h1>
 
-                {/* Tabs */}
-                <div className="flex bg-gray-100 p-1 rounded-lg self-start md:self-auto">
-                    <button
-                        onClick={() => setActiveTab('upcoming')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'upcoming'
-                            ? 'bg-white text-teal-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        Próximas
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('history')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'history'
-                            ? 'bg-white text-teal-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        Historial
-                    </button>
-                </div>
-            </div>
-
-            {filteredAppointments.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center">
-                    <div className="p-4 bg-gray-50 rounded-full mb-4">
-                        <Calendar className="w-12 h-12 text-gray-300" />
+                    {/* Tabs */}
+                    <div className="flex bg-gray-100 p-1 rounded-lg self-start md:self-auto">
+                        <button
+                            onClick={() => setActiveTab('upcoming')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'upcoming'
+                                ? 'bg-white text-teal-700 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Próximas
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('history')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'history'
+                                ? 'bg-white text-teal-700 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Historial
+                        </button>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">
-                        {activeTab === 'upcoming' ? 'No tienes citas programadas' : 'Aún no tienes historial médico'}
-                    </h3>
-                    <p className="text-gray-500 mt-1 max-w-sm">
-                        {activeTab === 'upcoming'
-                            ? 'Agenda una nueva cita para comenzar tu tratamiento.'
-                            : 'Aquí aparecerán tus citas pasadas o canceladas.'}
-                    </p>
                 </div>
-            ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAppointments.map((appointment) => (
-                        <AppointmentItem
-                            key={appointment.id}
-                            appointment={appointment}
-                            user={user}
-                            onUpdate={fetchAppointments}
-                            activeTab={activeTab}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
+
+                {filteredAppointments.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col items-center">
+                        <div className="p-4 bg-gray-50 rounded-full mb-4">
+                            <Calendar className="w-12 h-12 text-gray-300" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900">
+                            {activeTab === 'upcoming' ? 'No tienes citas programadas' : 'Aún no tienes historial médico'}
+                        </h3>
+                        <p className="text-gray-500 mt-1 max-w-sm">
+                            {activeTab === 'upcoming'
+                                ? 'Agenda una nueva cita para comenzar tu tratamiento.'
+                                : 'Aquí aparecerán tus citas pasadas o canceladas.'}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredAppointments.map((appointment) => (
+                            <AppointmentItem
+                                key={appointment.id}
+                                appointment={appointment}
+                                user={user}
+                                onUpdate={fetchAppointments}
+                                activeTab={activeTab}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </PageTransition>
     );
 }

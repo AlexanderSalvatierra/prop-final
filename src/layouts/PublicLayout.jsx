@@ -27,24 +27,30 @@ export function PublicLayout() {
               >
                 Inicio
               </Link>
-              <a
-                href="#servicios"
+              <Link
+                to="/servicios"
                 className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
               >
                 Servicios
-              </a>
-              <a
-                href="#testimonios"
+              </Link>
+              <Link
+                to="/galeria"
+                className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
+              >
+                Galería
+              </Link>
+              <Link
+                to="/testimonios"
                 className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
               >
                 Testimonios
-              </a>
-              <a
-                href="#contacto"
+              </Link>
+              <Link
+                to="/contacto"
                 className="text-gray-600 hover:text-teal-600 font-medium transition-colors"
               >
                 Contacto
-              </a>
+              </Link>
               <Link
                 to="/login"
                 className="px-6 py-2 border-2 border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors"
@@ -73,27 +79,34 @@ export function PublicLayout() {
                 >
                   Inicio
                 </Link>
-                <a
-                  href="#servicios"
+                <Link
+                  to="/servicios"
                   className="text-gray-600 hover:text-teal-600 font-medium transition-colors px-2 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Servicios
-                </a>
-                <a
-                  href="#testimonios"
+                </Link>
+                <Link
+                  to="/galeria"
+                  className="text-gray-600 hover:text-teal-600 font-medium transition-colors px-2 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Galería
+                </Link>
+                <Link
+                  to="/testimonios"
                   className="text-gray-600 hover:text-teal-600 font-medium transition-colors px-2 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Testimonios
-                </a>
-                <a
-                  href="#contacto"
+                </Link>
+                <Link
+                  to="/contacto"
                   className="text-gray-600 hover:text-teal-600 font-medium transition-colors px-2 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contacto
-                </a>
+                </Link>
                 <Link
                   to="/login"
                   className="text-center px-6 py-2 border-2 border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors"
@@ -131,9 +144,9 @@ export function PublicLayout() {
             <div className="flex flex-col items-center">
               <h3 className="font-semibold text-gray-900 mb-4">Enlaces Rápidos</h3>
               <div className="flex flex-col space-y-2 text-center">
-                <a href="#servicios" className="text-gray-600 hover:text-teal-600 transition-colors">Servicios</a>
-                <a href="#testimonios" className="text-gray-600 hover:text-teal-600 transition-colors">Testimonios</a>
-                <a href="#contacto" className="text-gray-600 hover:text-teal-600 transition-colors">Contacto</a>
+                <Link to="/servicios" className="text-gray-600 hover:text-teal-600 transition-colors">Servicios</Link>
+                <Link to="/testimonios" className="text-gray-600 hover:text-teal-600 transition-colors">Testimonios</Link>
+                <Link to="/contacto" className="text-gray-600 hover:text-teal-600 transition-colors">Contacto</Link>
                 <Link to="/login" className="text-gray-600 hover:text-teal-600 transition-colors">Iniciar Sesión</Link>
               </div>
             </div>

@@ -1,14 +1,23 @@
-import jsPDF from 'jspdf';
+// src/utils/generatePaymentReceipt.js
 
+// 1. CAMBIO IMPORTANTE: Usamos destructuración para jsPDF y importamos autoTable por nombre
+import { jsPDF } from 'jspdf'; // 👈 Importar con llaves {}
+import autoTable from 'jspdf-autotable'; // 👈 Importar la función directamente
+
+/**
+ * Generates a professional payment receipt PDF (Corporate Invoice Style)
+ * @param {Object} payment - The payment data
+ * @param {Object} patientData - The patient information
+ */
 export const generatePaymentReceipt = async (payment, patientData) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // --- Configuración de Estilos ---
-    const primaryColor = [13, 148, 136]; // Teal-600
-    const grayColor = [107, 114, 128];   // Gray-500
-    const darkColor = [31, 41, 55];      // Gray-800
+    // Corporate colors
+    const tealColor = [13, 148, 136];
+    const darkGray = [60, 60, 60];
+    const lightGray = [249, 250, 251];
 
     // --- Helper para cargar imagen ---
     const loadImage = (src) => {
@@ -21,113 +30,137 @@ export const generatePaymentReceipt = async (payment, patientData) => {
     };
 
     try {
-        // --- 1. Encabezado ---
-        // Logo
+        // --- 1. HEADER ---
         try {
             const logo = await loadImage('/propiel-logo.png');
-            doc.addImage(logo, 'PNG', 20, 15, 40, 15); // x, y, w, h
+            doc.addImage(logo, 'PNG', 20, 15, 40, 15);
         } catch (e) {
             console.warn("No se pudo cargar el logo", e);
-            // Fallback texto si falla logo
-            doc.setFontSize(20);
-            doc.setTextColor(...primaryColor);
+            // Fallback: texto PROPIEL
+            doc.setFontSize(18);
+            doc.setTextColor(...tealColor);
+            doc.setFont('helvetica', 'bold');
             doc.text("PROPIEL", 20, 25);
         }
 
-        // Datos de la Clínica (Derecha)
-        doc.setFontSize(10);
-        doc.setTextColor(...grayColor);
-        doc.text("Clínica Dermatológica Propiel", pageWidth - 20, 20, { align: 'right' });
-        doc.text("Av. Zihuatanejo Pte. 12, Centro", pageWidth - 20, 25, { align: 'right' });
-        doc.text("Zihuatanejo, Guerrero", pageWidth - 20, 30, { align: 'right' });
-        doc.text("RFC: PRO-123456-ABC", pageWidth - 20, 35, { align: 'right' });
-
-        // Línea separadora
-        doc.setDrawColor(200, 200, 200);
-        doc.line(20, 45, pageWidth - 20, 45);
-
-        // --- 2. Título y Folio ---
-        doc.setFontSize(16);
-        doc.setTextColor(...primaryColor);
-        doc.setFont("helvetica", "bold");
-        doc.text("RECIBO DE HONORARIOS", 20, 60);
-
-        doc.setFontSize(10);
-        doc.setTextColor(...grayColor);
-        doc.setFont("helvetica", "normal");
+        // Folio
         const folio = String(payment.id).substring(0, 8).toUpperCase();
-        doc.text(`Folio: #${folio}`, pageWidth - 20, 60, { align: 'right' });
+        doc.setFontSize(14);
+        doc.setTextColor(...tealColor);
+        doc.setFont("helvetica", "bold");
+        doc.text(`RECIBO #${folio}`, pageWidth - 20, 20, { align: 'right' });
 
-        // --- 3. Datos del Cliente ---
-        doc.setFillColor(249, 250, 251); // Gray-50
-        doc.rect(20, 70, pageWidth - 40, 25, 'F');
+        // Company info
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont("helvetica", "normal");
+        doc.text("Clínica Dermatológica Propiel", pageWidth - 20, 27, { align: 'right' });
+        doc.text("Av. Zihuatanejo Pte. 12, Centro", pageWidth - 20, 32, { align: 'right' });
+        doc.text("Zihuatanejo, Guerrero", pageWidth - 20, 37, { align: 'right' });
+        doc.text("RFC: PRO-123456-ABC", pageWidth - 20, 42, { align: 'right' });
+
+        // Separator line
+        let yPos = 50;
+        doc.setDrawColor(...tealColor);
+        doc.setLineWidth(1);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+
+        yPos = 60;
+
+        // --- 2. CLIENT DATA ---
+        doc.setFillColor(...lightGray);
+        doc.rect(20, yPos, pageWidth - 40, 25, 'F');
 
         doc.setFontSize(10);
-        doc.setTextColor(...darkColor);
+        doc.setTextColor(...darkGray);
         doc.setFont("helvetica", "bold");
-        doc.text("Recibí de:", 25, 80);
-        doc.text("Fecha de Emisión:", 120, 80);
+        doc.text("Recibí de:", 25, yPos + 8);
+        doc.text("Fecha de Emisión:", 120, yPos + 8);
 
         doc.setFont("helvetica", "normal");
-        doc.text(patientData.nombre || patientData.email || "Paciente", 25, 87);
-        doc.text(new Date(payment.created_at).toLocaleDateString('es-MX', {
+        doc.text(patientData.nombre || patientData.email || "Paciente", 25, yPos + 16);
+        doc.text(new Date(payment.created_at || new Date()).toLocaleDateString('es-MX', {
             year: 'numeric', month: 'long', day: 'numeric'
-        }), 120, 87);
+        }), 120, yPos + 16);
 
-        // --- 4. Tabla de Detalles ---
-        const startY = 110;
+        yPos += 35;
 
-        // Encabezados de tabla
-        doc.setFillColor(...primaryColor);
-        doc.rect(20, startY, pageWidth - 40, 10, 'F');
+        // --- 3. CONCEPTS TABLE ---
+        const amount = parseFloat(payment.monto);
+        const tableData = [[
+            '1',
+            payment.concepto || 'Servicios Médicos',
+            amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }),
+            amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+        ]];
 
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.text("CONCEPTO", 25, startY + 7);
-        doc.text("MÉTODO DE PAGO", 120, startY + 7);
-        doc.text("IMPORTE", pageWidth - 25, startY + 7, { align: 'right' });
-
-        // Fila de datos
-        doc.setTextColor(...darkColor);
-        doc.setFont("helvetica", "normal");
-
-        // Concepto
-        doc.text(payment.concepto || "Servicios Médicos", 25, startY + 20);
-
-        // Método
-        doc.text(payment.metodo || "No especificado", 120, startY + 20);
-
-        // Importe
-        const amount = parseFloat(payment.monto).toLocaleString('es-MX', {
-            style: 'currency',
-            currency: 'MXN'
+        // 2. CAMBIO IMPORTANTE: Ejecutar autoTable como función externa pasando 'doc'
+        autoTable(doc, {  // 👈 En lugar de doc.autoTable(...)
+            startY: yPos,
+            head: [['Cant.', 'Descripción', 'Precio Unitario', 'Importe']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: tealColor,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 10,
+                halign: 'center'
+            },
+            bodyStyles: {
+                textColor: darkGray,
+                fontSize: 10
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 20 },
+                1: { halign: 'left', cellWidth: 80 },
+                2: { halign: 'right', cellWidth: 40 },
+                3: { halign: 'right', cellWidth: 40 }
+            },
+            margin: { left: 20, right: 20 }
         });
-        doc.text(amount, pageWidth - 25, startY + 20, { align: 'right' });
 
-        // Línea inferior de la fila
-        doc.setDrawColor(229, 231, 235); // Gray-200
-        doc.line(20, startY + 28, pageWidth - 20, startY + 28);
+        // 3. CAMBIO IMPORTANTE: Acceder a lastAutoTable desde la propiedad del objeto doc
+        // (Esto suele seguir funcionando igual, pero verifica que autoTable lo inyecte)
+        yPos = doc.lastAutoTable.finalY + 10;
 
-        // --- 5. Total ---
-        const totalY = startY + 40;
+        // --- 4. PAYMENT METHOD ---
+        doc.setFontSize(10);
+        doc.setTextColor(...darkGray);
         doc.setFont("helvetica", "bold");
+        doc.text("Método de Pago:", 20, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(payment.metodo || "No especificado", 60, yPos);
+
+        yPos += 15;
+
+        // --- 5. TOTAL ---
+        doc.setFillColor(240, 240, 240);
+        doc.rect(pageWidth - 90, yPos - 5, 70, 12, 'F');
+
         doc.setFontSize(12);
-        doc.setTextColor(...darkColor);
-        doc.text("TOTAL:", 140, totalY);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...darkGray);
+        doc.text("TOTAL:", pageWidth - 85, yPos + 3);
 
         doc.setFontSize(14);
-        doc.setTextColor(...primaryColor);
-        doc.text(amount, pageWidth - 25, totalY, { align: 'right' });
+        doc.setTextColor(...tealColor);
+        doc.text(amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }),
+            pageWidth - 25, yPos + 3, { align: 'right' });
 
-        // --- 6. Pie de Página ---
+        // --- 6. LEGAL NOTICE ---
         const footerY = pageHeight - 30;
-        doc.setFontSize(8);
-        doc.setTextColor(...grayColor);
-        doc.setFont("helvetica", "normal");
-        doc.text("Gracias por su preferencia.", pageWidth / 2, footerY, { align: 'center' });
-        doc.text("Este documento es un comprobante interno y no tiene validez fiscal oficial.", pageWidth / 2, footerY + 5, { align: 'center' });
+        doc.setFontSize(7);
+        doc.setTextColor(120, 120, 120);
+        doc.setFont("helvetica", "italic");
+        doc.text("Este documento no es un comprobante fiscal oficial.", pageWidth / 2, footerY, { align: 'center' });
 
-        // Guardar PDF
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("Gracias por su preferencia.", pageWidth / 2, footerY + 5, { align: 'center' });
+        doc.text("Propiel - Clínica Dermatológica | Tel: (755) 554-1234", pageWidth / 2, footerY + 10, { align: 'center' });
+
+        // --- SAVE PDF ---
         doc.save(`Recibo_Propiel_${folio}.pdf`);
 
     } catch (error) {
